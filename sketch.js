@@ -1,10 +1,11 @@
 // Main file in the prisoners dilemma template
 
-let scorematrix = [[3, 1], [4, 2]]; // Score matrix of the prisoners dilemma
-let rounds = 50; // how many rounds in each game
-let tournaments = 20; // how many tournaments
+let scorematrix = [[3, 1], 
+		   [4, 2]]; // Score matrix of the prisoners dilemma
+let rounds = 100; // how many rounds in each game
+let tournaments = 1; // how many tournaments
 players = []; // Array to keep the players
-num_players = 4 // Number of players
+num_players = 6 // Number of players
 
 
 class player {
@@ -14,20 +15,36 @@ class player {
         this.strategi = strategi;
         this.moves = [];
         this.countermoves = [];
+        this.counterdefects = 0;
         
     }
-        
+                
+    reset() {
+    	
+    	this.moves = [];
+    	this.countermoves = [];
+    	this.counterdefects = 0;
+    }
+    
+    counterdefs() {
+    	this.counterdefects = 0;
+    	for(var a = 0; a < this.countermoves.length; a++) {
+    		if (this.countermoves[a] == 1){ this.counterdefects += 1; 
+		}
+    	}
+    }
+    
     answer(last){
     	var move;
-    	if (this.strategi == 0){ // Allways answer 0
+    	if (this.strategi == 0){ // Allways answer 0 (cooperate)
     		move = 0; }
-    	else if (this.strategi == 1){ // Allways answer 1
+    	else if (this.strategi == 1){ // Allways answer 1 (Defect)
     		move = 1;}
     	else if (this.strategi == 2) {  // 50% random 0 or 1
      		move = (int(random(0, 2)));}
      	else if (this.strategi == 3) {  // 30/70 random 0 or 1
      		var x = int(random(0, 11));
-     		if (x < 10) { move = 0; }
+     		if (x < 8) { move = 0; }
      			else {move = 1; }
     		}
     		
@@ -66,7 +83,17 @@ class player {
 		if (last) { move = 1; }
 		}
     		
+    	else if (this.strategi == 8) { // Tit for Tat with last defect and defect if other defect 5 times
+       		move = 0;
+    		if (this.countermoves.length > 1) {
+    			move = this.countermoves[this.countermoves.length - 2];
+    		}
+    		this.counterdefs();
+    		if (this.counterdefects > 4) { move = 1; }
+		if (last) { move = 1; }
+    		}	
     	this.moves.push(move);
+
     	return move;	
     	
     }
@@ -75,14 +102,9 @@ class player {
 
 function setup() {
     createCanvas(200,200);
-    players.push(new player("Allways_Cooperate", 0));
-    players.push(new player("Allways_Reject", 1));
-    players.push(new player("Random_50_50", 2));
-    players.push(new player("Random_70_30", 3));
-    players.push(new player("Tit4Tat",4));
-    players.push(new player("Tit4Tat_defect_last",5));
-    players.push(new player("Tit42Tat", 6));
-    players.push(new player("Tit42Tat_defect_last", 7));
+    for(var a = 0; a < num_players; a++) {
+    	players.push(new player("name" + str(a), int(random(1, 9))));
+    }
 
   }
 
@@ -92,10 +114,8 @@ function draw() {
 	for(var h = 0; h < tournaments; h++) {
 	    for(var i = 0; i < players.length; i++) {
 	    	for(var j = i; j < players.length; j++) {
-		    	players[i].moves = [];
-	    		players[i].countermoves = [];
-			players[j].moves = [];
-	    		players[j].countermoves = [];
+		    	players[i].reset();
+	    		players[j].reset();
 	    	    		
 	    		for(var k = 0; k < rounds; k++) {
 	    			var last = 'false';
@@ -104,26 +124,24 @@ function draw() {
 	    					last = 'true'; 
 	    					}
 	    	    			game(players[i], players[j], last);
-	    	    			//console.log(players[i].name + " " +  players[j].name); 
-	    	    			}
 	    	    		}
-	    	  	}
+	    	    	}
+	    	}
 	    }
 	}
+	
 	var results = [];
-        
-    for(var n = 0; n < players.length; n++) {
-    	console.log(players[n].name + " " + players[n].score);
-        results.push({name: players[n].name, value: players[n].score})
+	for(var n = 0; n < players.length; n++) {
+    		console.log(players[n].name + " " + players[n].score);
+        	results.push({name: players[n].name, value: players[n].score, strategi: players[n].strategi})
 	}
-//	results = results.sort();
-	// sort by value
 	results.sort(function (a, b) {
 	return a.value - b.value;
 	});
 	for(m = results.length; m > 0; m--){
 	console.log(results[m]);
 	}
+
     noLoop();
 }
 
