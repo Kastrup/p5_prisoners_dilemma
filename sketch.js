@@ -1,7 +1,8 @@
 // Main file in the prisoners dilemma template
 
 let scorematrix = [[3, 1], [4, 2]]; // Score matrix of the prisoners dilemma
-let rounds = 100; // how many rounds in each game
+let rounds = 50; // how many rounds in each game
+let tournaments = 20; // how many tournaments
 players = []; // Array to keep the players
 num_players = 4 // Number of players
 
@@ -46,6 +47,25 @@ class player {
 		if (last) { move = 1; }
     		}	
     		
+    	else if (this.strategi == 6) { // Tit for two Tats
+    		move = 0;
+    		if (this.countermoves.length > 2) {
+    			if ((this.countermoves[this.countermoves.length - 2] == 1) && (this.countermoves[this.countermoves.length - 3] == 1)) {
+    				move = 1;
+    		}
+		}	
+		}
+	
+	else if (this.strategi == 7) { // Tit for two Tats last defect
+    		move = 0;
+    		if (this.countermoves.length > 2) {
+    			if ((this.countermoves[this.countermoves.length - 2] == 1) && (this.countermoves[this.countermoves.length - 3] == 1)) {
+    				move = 1;
+    		}
+		}	
+		if (last) { move = 1; }
+		}
+    		
     	this.moves.push(move);
     	return move;	
     	
@@ -61,33 +81,48 @@ function setup() {
     players.push(new player("Random_70_30", 3));
     players.push(new player("Tit4Tat",4));
     players.push(new player("Tit4Tat_defect_last",5));
+    players.push(new player("Tit42Tat", 6));
+    players.push(new player("Tit42Tat_defect_last", 7));
+
   }
 
 
 
 function draw() {
-    
-    for(var i = 0; i < players.length; i++) {
-    	for(var j = i; j < players.length; j++) {
-	    	players[i].moves = [];
-    		players[i].countermoves = [];
-		players[j].moves = [];
-    		players[j].countermoves = [];
-    	    		
-    		for(var k = 0; k < rounds; k++) {
-    			var last = 'false';
-    			if (i != j) {
-    				if (k + 1 == rounds) { 
-    					last = 'true'; 
-    					}
-    	    			game(players[i], players[j], last);
-    	    			//console.log(players[i].name + " " +  players[j].name); 
-    	    			}
-    	    	}
-    	    }
-  }
+	for(var h = 0; h < tournaments; h++) {
+	    for(var i = 0; i < players.length; i++) {
+	    	for(var j = i; j < players.length; j++) {
+		    	players[i].moves = [];
+	    		players[i].countermoves = [];
+			players[j].moves = [];
+	    		players[j].countermoves = [];
+	    	    		
+	    		for(var k = 0; k < rounds; k++) {
+	    			var last = 'false';
+	    			if (i != j) {
+	    				if (k + 1 == rounds) { 
+	    					last = 'true'; 
+	    					}
+	    	    			game(players[i], players[j], last);
+	    	    			//console.log(players[i].name + " " +  players[j].name); 
+	    	    			}
+	    	    		}
+	    	  	}
+	    }
+	}
+	var results = [];
+        
     for(var n = 0; n < players.length; n++) {
-        console.log(players[n].name + " " + players[n].score);
+    	console.log(players[n].name + " " + players[n].score);
+        results.push({name: players[n].name, value: players[n].score})
+	}
+//	results = results.sort();
+	// sort by value
+	results.sort(function (a, b) {
+	return a.value - b.value;
+	});
+	for(m = results.length; m > 0; m--){
+	console.log(results[m]);
 	}
     noLoop();
 }
